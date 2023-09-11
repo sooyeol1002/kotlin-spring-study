@@ -1,5 +1,6 @@
 package com.example.myapp.post
 
+import com.example.myapp.auth.Profiles
 import jakarta.annotation.PostConstruct
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.Database
@@ -21,6 +22,7 @@ object Posts : Table("post") {
     val createdDate  = datetime("created_date")
     // primary key 설정(제약조건)
     override val primaryKey = PrimaryKey(id, name = "pk_post_id")
+    val profileId = reference("profile_id", Profiles);
 }
 // id가 long(mysql bigint)이고 primary key, auto_increment 필드/컬럼 생성
 object PostComments : LongIdTable("post_comment") {
@@ -28,6 +30,7 @@ object PostComments : LongIdTable("post_comment") {
     // val 필드명 = reference("컬럼명", 참조필드)
     val postId = reference("post_id", Posts.id)
     val comment = text("comment")
+    val profileId = reference("profile_id", Profiles);
 }
 
 // 테이블 생성 코드

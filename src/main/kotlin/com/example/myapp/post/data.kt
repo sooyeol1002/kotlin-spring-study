@@ -4,12 +4,18 @@ package com.example.myapp.post
 // domain-model(JPA entity)
 
 data class PostResponse(
-        val id : Long,
-        val title : String,
-        val createdDate : String,
-        val profileId : Long,
-        val nickname : String,
-        val commentCount : Long
+    val id: Long,
+    val title: String,
+    val createdDate: String,
+    val profileId: String
+)
+data class PostCommentCountResponse(
+    val id : Long,
+    val title: String,
+    val createdDate: String,
+    val profileId: Long,
+    val nickname: String,
+    val commentCount : Long
 )
 // Java
 // String str = null;
