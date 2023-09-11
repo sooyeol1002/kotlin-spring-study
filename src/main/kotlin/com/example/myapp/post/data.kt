@@ -6,8 +6,10 @@ package com.example.myapp.post
 data class PostResponse(
         val id : Long,
         val title : String,
-        val content : String,
-        val createdDate: String
+        val createdDate : String,
+        val profileId : Long,
+        val nickname : String,
+        val commentCount : Long
 )
 // Java
 // String str = null;
