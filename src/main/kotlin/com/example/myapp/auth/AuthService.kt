@@ -17,15 +17,27 @@ class AuthService(private val database: Database){
     fun createIdentity(req: SignupRequest) : Long {
         // 기존에 있는 계정인지 확인
         val record = transaction {
-            Identities.select(Identities.username eq req.username).singleOrNull()
+            Identities
+                .select(
+                    Identities.username eq req.username
+                ).singleOrNull()
         }
         if(record != null){
             return 0;
         }
 
+        // 300ms 걸림
         val secret = HashUtil.createHash(req.password)
 
         val profileId = transaction {
+            // transaction 내부에서 예외처리 발생하면 자동 rollback
+            // 기본적으로 auto-commit
+
+            // try-catch구문이 transaction 내부에 있으면
+            // 예외처리 발생시에 catch으로 가버림
+            // transaction 함수에서는 예외처리 발생하지 않은 것으로 봄
+            // 수동으로 catch 구문에서 rollback()을 해줘야 함
+
             try {
                 // 1. identity 정보를 insert
                 val identityId = Identities.insertAndGetId {
@@ -52,7 +64,23 @@ class AuthService(private val database: Database){
     }
 
     fun authenticate(username: String, password: String) : Pair<Boolean, String> {
-        val (result, payload) = transaction(database.transactionManager.defaultIsolationLevel, readOnly = true) {
+
+        // readOnly를 하게되면 transaction id를 생성하지 않음
+        // MySQL 기본 격리수준, repeatable_read
+        // 다른 SQL DBMS는 기본 격리수준, read_commited
+
+        // read_commited (병렬처리지만, 커밋된 것만 조회되게 함)
+        // txn = 1, select all - 오래걸림
+        // txn = 2, insert - 빠르게됨
+        // txn(2)의 insert 결과가 txn(2)의 select 결과에 반영이됨.
+
+        // repeatable_read (병렬처리지만, 요청한 순서대로 조회되게 함)
+        // txn = 1, select all - 오래걸림
+        // txn = 2, insert - 빠르게됨
+        // txn(2)의 insert 결과가 txn(2)의 select 결과에 반영이됨.
+
+        val (result, payload) = transaction(
+            database.transactionManager.defaultIsolationLevel, readOnly = true) {
             val i = Identities;
             val p = Profiles;
 
