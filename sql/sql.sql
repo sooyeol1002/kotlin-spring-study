@@ -1,1 +1,1 @@
-create database myapp2;
+select * from post;
